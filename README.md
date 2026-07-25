@@ -5,7 +5,7 @@ A clean, responsive, browser-based blueprint engine designed specifically for in
 This tool eliminates the guesswork and wasted materials when fabricating custom camera rigs, slider brackets, overhead arms, or lighting mounts out of sheet metal.
 
 ## 🚀 Live Link
-👉 **[Launch the Calculator]([https://github.io](http://github.io" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Clynshotimages Production LLC))**
+👉 **[Launch the Calculator](<a href="http://github.io" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Clynshotimages Production LLC
 
 ---
 

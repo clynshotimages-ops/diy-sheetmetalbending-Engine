@@ -4,7 +4,9 @@ A clean, responsive, browser-based blueprint engine designed specifically for in
 
 This tool eliminates the guesswork and wasted materials when fabricating custom camera rigs, slider brackets, overhead arms, or lighting mounts out of sheet metal.
 
-👉 **[Launch the Calculator](https://github.io)**
+👉 **[Launch the Calculator](https://clynshotimages-ops.github.io/diy-sheetmetal-bending-engine/)**
+
+
 
 
 ## 📸 Overview & Features

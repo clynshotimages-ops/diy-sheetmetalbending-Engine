@@ -39,6 +39,6 @@ If you want to tweak this tool locally on your computer:
 ---
 
 ## ⚖️ License & Credits
-Designed and engineered for precision manufacturing by **Clynshotimages Production LLC**. All rights reserved. 
+Designed and engineered for limited precision manufacturing by **Clynshotimages Production LLC**.  
 
-*Providing cost-effective techniques and free tools to help independent creators build better studios.*
+*Providing cost-effective techniques and free tools to help independent creators build better film-studios rigging.*

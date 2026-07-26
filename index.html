@@ -11,37 +11,50 @@ body {
   color: #e2e8f0;
   display: flex;
   justify-content: center;
-  padding: 30px;
+  padding: 15px; /* Reduced from 30px to save precious phone screen real estate */
+  box-sizing: border-box;
+}
+
+/* Ensure padding doesn't break full-width layouts */
+* {
+  box-sizing: border-box;
 }
 
 .container {
   display: flex;
+  flex-direction: row; /* Horizontal columns on laptop screens */
   gap: 20px;
+  width: 100%;
+  max-width: 1000px; /* Caps the max layout expansion on wide desktop monitors */
 }
 
-/* LEFT PANEL */
+/* /* LEFT PANEL */ */
 .panel {
-  width: 460px;
+  flex: 1; /* Automatically expands/shrinks to balance with the viewer box */
+  max-width: 460px; /* Preserves your original designed layout width on desktop view */
   background: rgba(22, 28, 45, 0.95);
   padding: 25px;
   border-radius: 12px;
 }
 
-/* RIGHT VIEW */
+/* /* RIGHT VIEW */ */
 .viewer {
-  width: 500px;
+  flex: 1; /* Automatically expands/shrinks to balance with the control panel */
+  max-width: 500px; /* Preserves your original designed layout width on desktop view */
   background: rgba(22, 28, 45, 0.95);
   padding: 25px;
   border-radius: 12px;
 }
 
 canvas {
+  width: 100%; /* Forces the canvas block boundary to conform smoothly to thin screens */
+  height: auto; /* Scales proportionally so your drawn canvas shapes do not distort */
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 8px;
 }
 
-/* INPUTS */
+/* /* INPUTS */ */
 label {
   display: block;
   margin-top: 10px;
@@ -57,7 +70,7 @@ input {
   border: 1px solid #334155;
 }
 
-/* BUTTONS */
+/* /* BUTTONS */ */
 button {
   margin-top: 8px;
   padding: 8px;
@@ -80,6 +93,18 @@ button {
   background: #052e1b;
   color: #34d399;
 }
+
+/* 📱 MOBILE VIEW BREAKDOWN (Triggers on phone portrait orientation displays) */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stacks the control panel vertically on top of your canvas view */
+  }
+  
+  .panel, .viewer {
+    max-width: 100%; /* Overrides desktop limits to use the entire phone panel width */
+  }
+}
+
 </style>
 </head>
 

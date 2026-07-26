@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sheet Metal Engineering Analytics</title>
+
+<style>
+body {
+  font-family: "Courier New", monospace;
+  background: #0b0f19;
+  color: #e2e8f0;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+}
+
+/* LEFT PANEL */
+.panel {
+  width: 460px;
+  background: rgba(22, 28, 45, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+}
+
+/* RIGHT VIEW */
+.viewer {
+  width: 500px;
+  background: rgba(22, 28, 45, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+}
+
+canvas {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+/* INPUTS */
+label {
+  display: block;
+  margin-top: 10px;
+  color: #94a3b8;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
+}
+
+/* BUTTONS */
+button {
+  margin-top: 8px;
+  padding: 8px;
+  width: 100%;
+  background: #0284c7;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.small {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+}
+
+.result {
+  margin-top: 15px;
+  padding: 10px;
+  background: #052e1b;
+  color: #34d399;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LEFT -->
+  <div class="panel">
+
+    <h3>BENDING ENGINE</h3>
+
+    <label for="H">Height (H)</label>
+    <input id="H" type="number" value="120" oninput="draw()">
+
+    <label for="W">Width (W)</label>
+    <input id="W" type="number" value="80" oninput="draw()">
+
+    <label for="T">Thickness (T)</label>
+    <input id="T" type="number" value="2" oninput="draw()">
+
+    <label for="R">Radius (R)</label>
+    <input id="R" type="number" value="10" oninput="draw()">
+
+    <label for="θ">Angle (θ)</label>
+    <input id="angle" type="number" value="90" oninput="draw()">
+
+    <label for="K">K Factor</label>
+    <input id="K" type="number" value="0.45">
+
+    <button class="small" onclick="computeSB(); draw()">EXECUTE SB</button>
+    <input id="SB" type="number">
+
+    <button class="small" onclick="computeBA(); draw()">EXECUTE BA</button>
+    <input id="BA" type="number">
+
+    <hr style="margin:20px 0;border-color:#334155;">
+
+    <h3>BACKSTOP CALCULATOR</h3>
+
+    <label for="L">Backstop (L)</label>
+    <input id="BSL" type="number" readonly>
+
+    <label for="W">Backstop (W)</label>
+    <input id="BSW" type="number" readonly>
+
+    <button class="small" onclick="computeBackstops(); draw()">
+      COMPUTE BACKSTOPS
+    </button>
+
+    <button onclick="calculateAll()">
+      COMPUTE PART
+    </button>
+
+    <div class="result">
+      FLAT LENGTH: <span id="result">0</span>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="viewer">
+    <h3>FLAT PROFILE VIEW</h3>
+    <canvas id="c" width="480" height="420"></canvas>
+  
+
+  <!-- PASTE THE FOOTER HERE INSIDE THE VIEWER -->
+  <div class="footer-credits" style="text-align: center; margin-top: 20px; font-size: 11px; color: #888888; font-family: monospace;">
+    <p> 2026 Clynshotimages Production LLC. All rights reserved.</p>
+    <p style="margin-top: 5px; color: #aaaaaa;">Designed and engineered for Limited precision manufacturing.</p>
+  </div>
+  </div>
+
+
+
+<script>
+
+function get(n){ return +document.getElementById(n).value || 0; }
+
+/* SETBACK */
+function computeSB(){
+  let R = get("R");
+  let T = get("T");
+  let a = get("angle");
+
+  let rad = (a/2) * Math.PI/180;
+  let SB = (R + T) * Math.tan(rad);
+
+  document.getElementById("SB").value = SB.toFixed(3);
+}
+
+/* BEND ALLOWANCE */
+function computeBA(){
+  let R = get("R");
+  let T = get("T");
+  let K = get("K");
+  let a = get("angle");
+
+  let BA = (Math.PI/180) * a * (R + K*T);
+
+  document.getElementById("BA").value = BA.toFixed(3);
+}
+
+/* FLAT */
+function computeFlat(){
+  let H = get("H");
+  let W = get("W");
+  let SB = get("SB");
+  let BA = get("BA");
+
+  let flat = (H + W) - (2*SB) + BA;
+
+  document.getElementById("result").textContent = flat.toFixed(3);
+  return flat;
+}
+
+/* BACKSTOP CALCULATOR */
+function computeBackstops(){
+  let H = get("H");
+  let W = get("W");
+  let SB = get("SB");
+  let BA = get("BA");
+
+  let backstopL = H - SB + BA/2;
+  let backstopW = W - SB + BA/2;
+
+  document.getElementById("BSL").value = backstopL.toFixed(3);
+  document.getElementById("BSW").value = backstopW.toFixed(3);
+}
+
+function calculateAll(){
+  computeSB();
+  computeBA();
+  computeFlat();
+  computeBackstops();
+  draw();
+}
+
+/* ========================= UPDATED FLAT DRAW ENGINE ========================= */
+function draw(){
+
+  const c = document.getElementById("c");
+  const ctx = c.getContext("2d");
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let H = get("H");
+  let W = get("W");
+  let T = get("T");
+
+  let SB = +document.getElementById("SB").value || 0;
+  let BA = +document.getElementById("BA").value || 0;
+
+  // Fallback computation if buttons weren't hit yet
+  if(SB === 0 || BA === 0) {
+    let R = get("R");
+    let K = get("K");
+    let a = get("angle");
+
+    SB = (R + T) * Math.tan((a/2) * Math.PI/180);
+    BA = (Math.PI/180) * a * (R + K*T);
+  }
+
+  let leg1 = H - SB;
+  let leg2 = W - SB;
+  let totalFlat = leg1 + BA + leg2;
+
+  // Layout Constraints & Scaling
+  let paddingX = 40;
+  let canvasWidthForDrawing = c.width - (paddingX * 2);
+
+  let scale = totalFlat > 0 ? canvasWidthForDrawing / totalFlat : 1;
+
+  // Enforce boundaries for rendering extreme inputs
+  if (scale > 2) scale = 2;
+
+  let startX = (c.width - (totalFlat * scale)) / 2;
+  let startY = 160;
+
+  let sheetThicknessHeight = Math.max(T * scale * 2, 60);
+
+  // Coordinate markers
+  let x0 = startX;
+  let x1 = startX + (leg1 * scale);
+  let x2 = x1 + (BA * scale);
+  let x3 = startX + (totalFlat * scale);
+
+  // 1. DRAW SHEET METAL FLAT BLANK
+  ctx.fillStyle = "#1e293b";
+  ctx.strokeStyle = "#94a3b8";
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.rect(x0, startY, totalFlat * scale, sheetThicknessHeight);
+  ctx.fill();
+  ctx.stroke();
+
+  // 2. DRAW BEND LINES (BA ZONE)
+  ctx.strokeStyle = "#34d399";
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+
+  // First Bend Line
+  ctx.beginPath();
+  ctx.moveTo(x1, startY);
+  ctx.lineTo(x1, startY + sheetThicknessHeight);
+  ctx.stroke();
+
+  // Second Bend Line
+  ctx.beginPath();
+  ctx.moveTo(x2, startY);
+  ctx.lineTo(x2, startY + sheetThicknessHeight);
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+  // 3. INTERNAL ZONE LABELS
+  ctx.font = "11px Courier New";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  // Leg 1 Text
+  ctx.fillStyle = "#e2e8f0";
+  ctx.fillText("FLAT H-SB", x0 + (x1 - x0)/2, startY + sheetThicknessHeight/2 - 6);
+  ctx.fillText("(" + leg1.toFixed(1) + ")", x0 + (x1 - x0)/2, startY + sheetThicknessHeight/2 + 8);
+
+  // BA Text
+  ctx.fillStyle = "#34d399";
+  ctx.fillText("BA ZONE", x1 + (x2 - x1)/2, startY + sheetThicknessHeight/2 - 6);
+  ctx.fillText("(" + BA.toFixed(1) + ")", x1 + (x2 - x1)/2, startY + sheetThicknessHeight/2 + 8);
+
+  // Leg 2 Text
+  ctx.fillStyle = "#e2e8f0";
+  ctx.fillText("FLAT W-SB", x2 + (x3 - x2)/2, startY + sheetThicknessHeight/2 - 6);
+  ctx.fillText("(" + leg2.toFixed(1) + ")", x2 + (x3 - x2)/2, startY + sheetThicknessHeight/2 + 8);
+
+  // 4. OUTER TOTAL DIMENSION LINE (BOTTOM)
+  let dimY = startY + sheetThicknessHeight + 40;
+
+  ctx.strokeStyle = "#38bdf8";
+  ctx.fillStyle = "#38bdf8";
+  ctx.lineWidth = 1;
+
+  ctx.beginPath();
+  ctx.moveTo(x0, dimY);
+  ctx.lineTo(x3, dimY);
+  ctx.stroke();
+
+  // Dimension tick markers
+  ctx.beginPath(); ctx.moveTo(x0, dimY - 5); ctx.lineTo(x0, dimY + 5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x3, dimY - 5); ctx.lineTo(x3, dimY + 5); ctx.stroke();
+
+  ctx.fillText("TOTAL FLAT BLANK: " + totalFlat.toFixed(3), (x0 + x3)/2, dimY + 15);
+  
+
+  // 5. SETBACK REFERENCE HIGHLIGHTS (TOP OVERLAY)
+  let refY = startY - 30;
+
+  ctx.strokeStyle = "#f59e0b";
+  ctx.fillStyle = "#f59e0b";
+
+  // Left SB Indicator
+  ctx.beginPath();
+  ctx.moveTo(x1 - (SB * scale), refY);
+  ctx.lineTo(x1, refY);
+  ctx.stroke();
+
+  ctx.beginPath(); ctx.moveTo(x1 - (SB * scale), refY - 4); ctx.lineTo(x1 - (SB * scale), refY + 4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, refY - 4); ctx.lineTo(x1, refY + 4); ctx.stroke();
+
+  ctx.fillText("SB:" + SB.toFixed(1), x1 - (SB * scale)/2, refY - 10);
+
+  // Right SB Indicator
+  ctx.beginPath();
+  ctx.moveTo(x2, refY);
+  ctx.lineTo(x2 + (SB * scale), refY);
+  ctx.stroke();
+
+  ctx.beginPath(); ctx.moveTo(x2, refY - 4); ctx.lineTo(x2, refY + 4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2 + (SB * scale), refY - 4); ctx.lineTo(x2 + (SB * scale), refY + 4); ctx.stroke();
+
+  ctx.fillText("SB:" + SB.toFixed(1), x2 + (SB * scale)/2, refY - 10);
+
+  // Extension Dotted lines to Top Reference
+  ctx.strokeStyle = "#475569";
+  ctx.setLineDash([2, 3]);
+
+  ctx.beginPath(); ctx.moveTo(x1, startY); ctx.lineTo(x1, refY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, startY); ctx.lineTo(x2, refY); ctx.stroke();
+
+  ctx.setLineDash([]);
+}
+
+draw();
+</script>
+
+</body>
+</html>

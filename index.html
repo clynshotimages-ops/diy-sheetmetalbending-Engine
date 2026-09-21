@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -144,11 +145,21 @@ button {
     <label for="W">Width (W)</label>
     <input id="W" type="number" value="80" oninput="draw()">
 
-    <label for="T">Thickness (T)</label>
-    <input id="T" type="number" value="2" oninput="draw()">
+    <label for="alloy">Material Alloy</label>
+    <select id="alloy" onchange="recommendRadius(); changeKFactor(); draw()" style="width: 100%; padding: 8px; margin-top: 4px; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 6px; font-family: inherit;">
+    <option value="5052">Aluminum 5052-H32</option>
+    <option value="mild_steel">Mild Steel (A36)</option>
+    <option value="stainless">Stainless Steel (304)</option>
+    </select>
 
-    <label for="R">Radius (R)</label>
-    <input id="R" type="number" value="10" oninput="draw()">
+    <label for="T">Thickness (T)</label>
+    <input id="T" type="number" value="2" oninput="recommendRadius(); draw()">
+
+    <label for="R">Radius (R) <span id="auto-label" style="color: #38bdf8; font-size: 10px;">(Auto-Recommended)</span></label>
+    <input id="R" type="number" value="3" oninput="setManualMode(); draw()">
+
+
+
 
     <label for="θ">Angle (θ)</label>
     <input id="angle" type="number" value="90" oninput="draw()">
@@ -284,6 +295,63 @@ function calculateAll(){
   computeBackstops();
   draw();
 }
+
+/* DYNAMIC MULTI-ALLOY RADIUS CALCULATOR */
+function recommendRadius() {
+  let T = +document.getElementById("T").value || 0;
+  let alloy = document.getElementById("alloy").value;
+  let radiusInput = document.getElementById("R");
+  let autoLabel = document.getElementById("auto-label");
+  
+  let recommendedR = T; // Base safety fallback
+
+  if (alloy === "5052") {
+    autoLabel.textContent = "(5052-H32 Auto-Radius)";
+    if (T <= 1.6) recommendedR = T * 1.0;
+    else if (T <= 10) recommendedR = T * 1.5;
+    else recommendedR = T * 2.0;
+  } 
+  else if (alloy === "mild_steel") {
+    autoLabel.textContent = "(Mild Steel Auto-Radius)";
+    // Mild steel is highly ductile; thin sheets can bend tightly
+    if (T <= 3.0) recommendedR = T * 0.5; 
+    else if (T <= 6.0) recommendedR = T * 1.0;
+    else recommendedR = T * 1.5;
+  } 
+  else if (alloy === "stainless") {
+    autoLabel.textContent = "(Stainless 304 Auto-Radius)";
+    // Stainless work-hardens rapidly and requires larger radii to prevent cracking
+    if (T <= 2.0) recommendedR = T * 1.0;
+    else if (T <= 6.0) recommendedR = T * 1.5;
+    else recommendedR = T * 2.0;
+  }
+
+  radiusInput.value = Number(recommendedR.toFixed(3));
+  autoLabel.style.color = "#38bdf8";
+}
+
+/* AUTOMATIC K-FACTOR ADJUSTMENT */
+function changeKFactor() {
+  let alloy = document.getElementById("alloy").value;
+  let kInput = document.getElementById("K");
+  
+  // Standard industrial air-bending baselines
+  if (alloy === "5052") kInput.value = "0.45";
+  else if (alloy === "mild_steel") kInput.value = "0.42";
+  else if (alloy === "stainless") kInput.value = "0.38";
+}
+
+/* MANUAL OVERWRITE TRACKER */
+function setManualMode() {
+  let autoLabel = document.getElementById("auto-label");
+  if (autoLabel) {
+    autoLabel.textContent = "(Manual Overwrite)";
+    autoLabel.style.color = "#f59e0b";
+  }
+}
+
+
+
 
 /* ========================= UPDATED FLAT DRAW ENGINE ========================= */
 function draw(){
